@@ -11,6 +11,7 @@
 	import axios from "axios";
 	import { blur } from "svelte/transition";
 	import { LoaderCircle } from "lucide-svelte";
+	import LoadingButton from "$lib/components/ui/button/loading-button.svelte";
 
 	let modal: boolean = false;
 
@@ -24,7 +25,7 @@
 	}
 
 	async function createPost() {
-		//simulating loading for testing perposes
+		await new Promise((resolve) => setTimeout(resolve, 2000));
 		interface resp {
 			Message: string;
 		}
@@ -109,16 +110,9 @@
 							<Label>name</Label>
 							<Input bind:value={title} type="text" required />
 							<div class="w-full grid-cols-2">
-								<Button variant="outline" type="submit">
-									{#if loading}
-										<LoaderCircle
-											class="mr-2 h-4 w-4 animate-spin"
-										/>
-										Loading...
-									{:else}
-										create
-									{/if}
-								</Button>
+								<LoadingButton variant="outline" {loading}>
+									create feed
+								</LoadingButton>
 							</div>
 						</form>
 					</CardContent>

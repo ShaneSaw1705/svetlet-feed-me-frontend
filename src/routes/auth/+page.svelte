@@ -1,14 +1,13 @@
 <script lang="ts">
-	import Button from "$lib/components/ui/button/button.svelte";
 	import CardContent from "$lib/components/ui/card/card-content.svelte";
 	import CardHeader from "$lib/components/ui/card/card-header.svelte";
 	import CardTitle from "$lib/components/ui/card/card-title.svelte";
 	import Card from "$lib/components/ui/card/card.svelte";
 	import Input from "$lib/components/ui/input/input.svelte";
 	import Label from "$lib/components/ui/label/label.svelte";
-	import { LoaderCircle } from "lucide-svelte";
 	import { toast } from "svelte-sonner";
 	import axios from "axios";
+	import LoadingButton from "$lib/components/ui/button/loading-button.svelte";
 
 	let email: string = "";
 	let loading: boolean = false;
@@ -41,14 +40,9 @@
 			<form on:submit={handleSubmit}>
 				<Label>Email</Label>
 				<Input type="email" bind:value={email} required />
-				<Button type="submit" disabled={loading}>
-					{#if loading}
-						<LoaderCircle class="mr-2 h-4 w-4 animate-spin" />
-						Loading...
-					{:else}
-						sign in
-					{/if}
-				</Button>
+				<LoadingButton variant="default" {loading}>
+					log in
+				</LoadingButton>
 			</form>
 		</CardContent>
 	</Card>
