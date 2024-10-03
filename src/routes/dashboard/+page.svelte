@@ -20,4 +20,3 @@
 	<h1>Testing</h1>
 	<Button on:click={handleToast}>Testing</Button>
 </div>
-

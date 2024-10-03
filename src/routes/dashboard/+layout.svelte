@@ -6,10 +6,51 @@
 	import CardTitle from "$lib/components/ui/card/card-title.svelte";
 	import Input from "$lib/components/ui/input/input.svelte";
 	import Label from "$lib/components/ui/label/label.svelte";
+	import { toast } from "svelte-sonner";
 	import * as Select from "$lib/components/ui/select/index.js";
+	import axios from "axios";
 	import { blur } from "svelte/transition";
+	import { LoaderCircle } from "lucide-svelte";
 
 	let modal: boolean = false;
+
+	let title: string = "";
+	let loading: boolean = false;
+
+	function handleSubmit(e: Event) {
+		e.preventDefault();
+		loading = true;
+		createPost();
+	}
+
+	async function createPost() {
+		//simulating loading for testing perposes
+		interface resp {
+			Message: string;
+		}
+		try {
+			const res = await axios.post("/api/feed/create", { title });
+			if (res.status == 200) {
+				const body: resp = await res.data;
+				toast(`Feed created!: ${body.Message}`);
+			} else {
+				const body: resp = await res.data;
+				toast(`Feed failed: ${body.Message}`);
+			}
+		} catch (err) {
+			if (axios.isAxiosError(err)) {
+				console.error(
+					"Axios error:",
+					err.response?.status,
+					err.message,
+				);
+			} else {
+				console.error("Unknown error:", err);
+			}
+		} finally {
+			loading = false;
+		}
+	}
 
 	const feeds = [
 		{ value: "apple", label: "Apple" },
@@ -61,12 +102,22 @@
 						<CardTitle>Create feed</CardTitle>
 					</CardHeader>
 					<CardContent>
-						<form class="flex flex-col gap-2">
+						<form
+							on:submit={handleSubmit}
+							class="flex flex-col gap-2"
+						>
 							<Label>name</Label>
-							<Input type="text" required />
+							<Input bind:value={title} type="text" required />
 							<div class="w-full grid-cols-2">
 								<Button variant="outline" type="submit">
-									submit
+									{#if loading}
+										<LoaderCircle
+											class="mr-2 h-4 w-4 animate-spin"
+										/>
+										Loading...
+									{:else}
+										create
+									{/if}
 								</Button>
 							</div>
 						</form>
