@@ -7,6 +7,7 @@
 	import Input from "$lib/components/ui/input/input.svelte";
 	import Label from "$lib/components/ui/label/label.svelte";
 	import * as Select from "$lib/components/ui/select/index.js";
+	import { blur } from "svelte/transition";
 
 	let modal: boolean = false;
 
@@ -40,31 +41,38 @@
 
 		<Button on:click={handleModal}>create feed</Button>
 	</div>
+
 	{#if modal}
 		<div
 			class="absolute flex w-screen h-screen items-center justify-center"
 		>
-			<Card>
-				<div class="w-full flex flex-row items-center justify-end">
-					<Button
-						on:click={handleModal}
-						class="text-[14px] p-2 h-8 w-8"
-						variant={"ghost"}
-					>
-						X
-					</Button>
-				</div>
-				<CardHeader>
-					<CardTitle>Create feed</CardTitle>
-				</CardHeader>
-				<CardContent>
-					<form class="flex flex-col gap-2">
-						<Label>name</Label>
-						<Input type="text" required />
-						<Button type="submit">submit</Button>
-					</form>
-				</CardContent>
-			</Card>
+			<div in:blur={{ duration: 300 }} out:blur={{ duration: 300 }}>
+				<Card>
+					<div class="w-full flex flex-row items-center justify-end">
+						<Button
+							on:click={handleModal}
+							class="text-[14px] p-2 h-8 w-8"
+							variant={"ghost"}
+						>
+							X
+						</Button>
+					</div>
+					<CardHeader>
+						<CardTitle>Create feed</CardTitle>
+					</CardHeader>
+					<CardContent>
+						<form class="flex flex-col gap-2">
+							<Label>name</Label>
+							<Input type="text" required />
+							<div class="w-full grid-cols-2">
+								<Button variant="outline" type="submit">
+									submit
+								</Button>
+							</div>
+						</form>
+					</CardContent>
+				</Card>
+			</div>
 		</div>
 	{/if}
 	<slot />

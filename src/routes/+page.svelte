@@ -8,7 +8,6 @@
 		CardHeader,
 		CardTitle,
 	} from "$lib/components/ui/card";
-	import { Input } from "$lib/components/ui/input";
 	import * as Accordion from "$lib/components/ui/accordion";
 	import { ChevronDown } from "lucide-svelte";
 	import Retro from "$lib/components/retro.svelte";
