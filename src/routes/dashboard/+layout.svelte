@@ -10,46 +10,38 @@
 	import * as Select from "$lib/components/ui/select/index.js";
 	import axios from "axios";
 	import { blur } from "svelte/transition";
-	import { LoaderCircle } from "lucide-svelte";
 	import LoadingButton from "$lib/components/ui/button/loading-button.svelte";
+	import { createMutation } from "@tanstack/svelte-query";
 
 	let modal: boolean = false;
-
 	let title: string = "";
-	let loading: boolean = false;
 
-	function handleSubmit(e: Event) {
+	const mutation = createMutation({
+		mutationKey: ["feed"],
+		mutationFn: createPost,
+		onSuccess: () => {
+			toast.success("Feed created successfully!");
+			title = ""; // Reset title after successful creation
+			modal = false; // Close modal
+		},
+		onError: (error) => {
+			console.error("Error creating feed:", error);
+			toast.error("Failed to create feed. Please try again.");
+		},
+	});
+
+	const handleSubmit = (e: Event) => {
 		e.preventDefault();
-		loading = true;
-		createPost();
-	}
+		$mutation.mutate({ title });
+	};
 
-	async function createPost() {
-		await new Promise((resolve) => setTimeout(resolve, 2000));
-		interface resp {
-			Message: string;
-		}
+	async function createPost(newPost: { title: string }) {
 		try {
-			const res = await axios.post("/api/feed/create", { title });
-			if (res.status == 200) {
-				const body: resp = await res.data;
-				toast(`Feed created!: ${body.Message}`);
-			} else {
-				const body: resp = await res.data;
-				toast(`Feed failed: ${body.Message}`);
-			}
+			const response = await axios.post("/api/feed/create", newPost);
+			return response.data; // Return the response data
 		} catch (err) {
-			if (axios.isAxiosError(err)) {
-				console.error(
-					"Axios error:",
-					err.response?.status,
-					err.message,
-				);
-			} else {
-				console.error("Unknown error:", err);
-			}
-		} finally {
-			loading = false;
+			console.error(err);
+			throw new Error(`${err}`);
 		}
 	}
 
@@ -94,7 +86,7 @@
 						<Button
 							on:click={handleModal}
 							class="text-[14px] p-2 h-8 w-8"
-							variant={"ghost"}
+							variant="ghost"
 						>
 							X
 						</Button>
@@ -110,7 +102,10 @@
 							<Label>name</Label>
 							<Input bind:value={title} type="text" required />
 							<div class="w-full grid-cols-2">
-								<LoadingButton variant="outline" {loading}>
+								<LoadingButton
+									variant="outline"
+									loading={$mutation.isPending}
+								>
 									create feed
 								</LoadingButton>
 							</div>
