@@ -11,10 +11,27 @@
 	import axios from "axios";
 	import { blur } from "svelte/transition";
 	import LoadingButton from "$lib/components/ui/button/loading-button.svelte";
-	import { createMutation } from "@tanstack/svelte-query";
+	import {
+		createMutation,
+		createQuery,
+		useQueryClient,
+	} from "@tanstack/svelte-query";
+
+	interface Feed {
+		ID: number;
+		AuthorId: string;
+		Title: string;
+		Secret: string;
+	}
+
+	interface Response {
+		Feeds: Feed[];
+	}
 
 	let modal: boolean = false;
 	let title: string = "";
+
+	const qc = useQueryClient();
 
 	const mutation = createMutation({
 		mutationKey: ["feed"],
@@ -23,6 +40,7 @@
 			toast.success("Feed created successfully!");
 			title = ""; // Reset title after successful creation
 			modal = false; // Close modal
+			qc.invalidateQueries({ queryKey: ["feeds"] });
 		},
 		onError: (error) => {
 			console.error("Error creating feed:", error);
@@ -45,13 +63,23 @@
 		}
 	}
 
-	const feeds = [
-		{ value: "apple", label: "Apple" },
-		{ value: "banana", label: "Banana" },
-		{ value: "blueberry", label: "Blueberry" },
-		{ value: "grapes", label: "Grapes" },
-		{ value: "pineapple", label: "Pineapple" },
-	];
+	const fetchFeeds = createQuery<Response>({
+		queryKey: ["feeds"],
+		queryFn: async () => {
+			try {
+				const res = await axios.get("/api/feed/alluser");
+				if (res.status === 200) {
+					const feeds: Response = res.data; // Use direct assignment
+					return feeds; // Ensure this is a valid Response
+				}
+				// If status is not 200, you can throw an error or return a default value
+				throw new Error("Failed to fetch feeds");
+			} catch (err) {
+				console.error(err);
+				throw new Error(String(err));
+			}
+		},
+	});
 
 	const handleModal = () => {
 		modal = !modal;
@@ -67,13 +95,23 @@
 				<Select.Value placeholder="Feeds..." />
 			</Select.Trigger>
 			<Select.Content>
-				{#each feeds as feed}
-					<Select.Item value={feed.value}>{feed.label}</Select.Item>
-				{/each}
+				{#if $fetchFeeds.isLoading}
+					<div>Loading...</div>
+				{:else if $fetchFeeds.isError}
+					<div>Error loading feeds.</div>
+				{:else if $fetchFeeds.data?.Feeds && $fetchFeeds.data.Feeds.length > 0}
+					{#each $fetchFeeds.data.Feeds as feed}
+						<Select.Item value={feed.Title}
+							>{feed.Title}</Select.Item
+						>
+					{/each}
+				{:else}
+					<div>No feeds available.</div>
+				{/if}
 			</Select.Content>
 		</Select.Root>
 
-		<Button on:click={handleModal}>create feed</Button>
+		<Button on:click={handleModal}>Create Feed</Button>
 	</div>
 
 	{#if modal}
@@ -92,7 +130,7 @@
 						</Button>
 					</div>
 					<CardHeader>
-						<CardTitle>Create feed</CardTitle>
+						<CardTitle>Create Feed</CardTitle>
 					</CardHeader>
 					<CardContent>
 						<form
@@ -106,7 +144,7 @@
 									variant="outline"
 									loading={$mutation.isPending}
 								>
-									create feed
+									Create Feed
 								</LoadingButton>
 							</div>
 						</form>
