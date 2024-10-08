@@ -20,18 +20,7 @@
 		createQuery,
 		useQueryClient,
 	} from "@tanstack/svelte-query";
-
-	// Types
-	interface Feed {
-		ID: number;
-		AuthorId: string;
-		Title: string;
-		Secret: string;
-	}
-
-	interface Response {
-		Feeds: Feed[];
-	}
+	import { type Feed } from "$lib/models/feed";
 
 	// Reactive Variables
 	let modal: boolean = false;
@@ -68,13 +57,13 @@
 	}
 
 	// Fetch Feeds Query
-	const fetchFeeds = createQuery<Response>({
+	const fetchFeeds = createQuery({
 		queryKey: ["feeds"],
-		queryFn: async () => {
+		queryFn: async (): Promise<Feed[]> => {
 			try {
 				const res = await axios.get("/api/feed/alluser");
 				if (res.status === 200) {
-					const feeds: Response = res.data;
+					const feeds = res.data;
 					return feeds;
 				}
 				throw new Error("Failed to fetch feeds");
@@ -111,11 +100,13 @@
 					<div>Loading...</div>
 				{:else if $fetchFeeds.isError}
 					<div>Error loading feeds.</div>
-				{:else if $fetchFeeds.data?.Feeds && $fetchFeeds.data.Feeds.length > 0}
-					{#each $fetchFeeds.data.Feeds as feed}
+				{:else if $fetchFeeds?.data && $fetchFeeds.data.length > 0}
+					{#each $fetchFeeds.data as feed}
 						<Select.Item
 							value={feed.Title}
-							on:click={() => goto(`/dashboard/${feed.ID}`)}
+							on:click={() => {
+								goto(`/dashboard/${feed.ID}`);
+							}}
 						>
 							{feed.Title}
 						</Select.Item>

@@ -1,24 +1,45 @@
 <script lang="ts">
-	import { page } from "$app/stores"; // Import the page store
 	import type { Feed } from "$lib/models/feed";
-	import { onMount } from "svelte";
+	import { createQuery, useQueryClient } from "@tanstack/svelte-query"; // Import useQueryClient
+	import { page } from "$app/stores"; // Import the page store to access URL parameters
 
-	$: id = $page.params.id;
+	let id: string | undefined;
 
-	let feed: Feed;
+	const queryClient = useQueryClient(); // Get the query client
 
-	onMount(async () => {
-		const res = await fetch(`/api/feed/byid/${id}`);
-		const data = await res.json(); // Parse the full response object
-		feed = data.feed; // Access the 'feed' property
+	// Reactive declaration to update the id
+	$: {
+		const newId = $page.params.id;
+		if (newId !== id) {
+			id = newId; // Update id
+			queryClient.invalidateQueries({ queryKey: ["feed"] }); // Invalidate the query when id changes
+		}
+	}
+
+	const query = createQuery({
+		queryKey: ["feed", id], // Use id from queryKey
+		queryFn: async (): Promise<Feed> => {
+			if (!id) {
+				throw new Error("ID is required"); // Throw an error if id is not available
+			}
+			const res = await fetch(`/api/feed/byid/${id}`);
+			if (!res.ok) {
+				throw new Error("Network response was not ok");
+			}
+			const data: Feed = await res.json(); // Parse the response object
+			return data;
+		},
 	});
 </script>
 
-<!-- Display the feed information -->
 <div>
-	{#if feed}
-		<h1>Feed: {feed.Title}</h1>
-		<p>Author: {feed.AuthorId}</p>
-		<p>Secret: {feed.Secret}</p>
+	{#if $query.isLoading}
+		<p>Loading...</p>
+	{:else if $query.isError}
+		<p>Error loading feed: {$query.error.message}</p>
+	{:else if $query.data}
+		<h1>Feed: {$query.data.Title}</h1>
+		<p>Author: {$query.data.AuthorId}</p>
+		<p>Secret: {$query.data.Secret}</p>
 	{/if}
 </div>

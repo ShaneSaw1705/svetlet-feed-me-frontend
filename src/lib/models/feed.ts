@@ -5,5 +5,5 @@ export interface FeedData {
 }
 
 export interface Feed extends FeedData {
-	id: number
+	ID: number
 }
