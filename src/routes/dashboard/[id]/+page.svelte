@@ -2,6 +2,7 @@
 	import type { Feed } from "$lib/models/feed";
 	import { createQuery, useQueryClient } from "@tanstack/svelte-query"; // Import useQueryClient
 	import { page } from "$app/stores"; // Import the page store to access URL parameters
+	import { Loader2 } from "lucide-svelte";
 
 	let id: string | undefined;
 
@@ -34,7 +35,9 @@
 
 <div>
 	{#if $query.isLoading}
-		<p>Loading...</p>
+		<div class="w-screen h-screen flex items-center justify-center">
+			<Loader2 class="animate-spin" />
+		</div>
 	{:else if $query.isError}
 		<p>Error loading feed: {$query.error.message}</p>
 	{:else if $query.data}
