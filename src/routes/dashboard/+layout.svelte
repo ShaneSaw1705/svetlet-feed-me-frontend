@@ -1,22 +1,27 @@
 <script lang="ts">
+	// Component Imports
 	import Button from "$lib/components/ui/button/button.svelte";
+	import LoadingButton from "$lib/components/ui/button/loading-button.svelte";
 	import { Card } from "$lib/components/ui/card";
 	import CardContent from "$lib/components/ui/card/card-content.svelte";
 	import CardHeader from "$lib/components/ui/card/card-header.svelte";
 	import CardTitle from "$lib/components/ui/card/card-title.svelte";
 	import Input from "$lib/components/ui/input/input.svelte";
 	import Label from "$lib/components/ui/label/label.svelte";
-	import { toast } from "svelte-sonner";
 	import * as Select from "$lib/components/ui/select/index.js";
+
+	// Utility and API Imports
 	import axios from "axios";
+	import { goto } from "$app/navigation";
+	import { toast } from "svelte-sonner";
 	import { blur } from "svelte/transition";
-	import LoadingButton from "$lib/components/ui/button/loading-button.svelte";
 	import {
 		createMutation,
 		createQuery,
 		useQueryClient,
 	} from "@tanstack/svelte-query";
 
+	// Types
 	interface Feed {
 		ID: number;
 		AuthorId: string;
@@ -28,11 +33,14 @@
 		Feeds: Feed[];
 	}
 
+	// Reactive Variables
 	let modal: boolean = false;
 	let title: string = "";
 
+	// Query Client
 	const qc = useQueryClient();
 
+	// Mutation for Creating a Post
 	const mutation = createMutation({
 		mutationKey: ["feed"],
 		mutationFn: createPost,
@@ -48,31 +56,27 @@
 		},
 	});
 
-	const handleSubmit = (e: Event) => {
-		e.preventDefault();
-		$mutation.mutate({ title });
-	};
-
+	// Create Post Function
 	async function createPost(newPost: { title: string }) {
 		try {
 			const response = await axios.post("/api/feed/create", newPost);
-			return response.data; // Return the response data
+			return response.data;
 		} catch (err) {
 			console.error(err);
 			throw new Error(`${err}`);
 		}
 	}
 
+	// Fetch Feeds Query
 	const fetchFeeds = createQuery<Response>({
 		queryKey: ["feeds"],
 		queryFn: async () => {
 			try {
 				const res = await axios.get("/api/feed/alluser");
 				if (res.status === 200) {
-					const feeds: Response = res.data; // Use direct assignment
-					return feeds; // Ensure this is a valid Response
+					const feeds: Response = res.data;
+					return feeds;
 				}
-				// If status is not 200, you can throw an error or return a default value
 				throw new Error("Failed to fetch feeds");
 			} catch (err) {
 				console.error(err);
@@ -81,12 +85,20 @@
 		},
 	});
 
+	// Event Handlers
+	const handleSubmit = (e: Event) => {
+		e.preventDefault();
+		$mutation.mutate({ title });
+	};
+
 	const handleModal = () => {
 		modal = !modal;
 	};
 </script>
 
+<!-- Main Layout -->
 <div class="h-screen w-full grid-rows-[auto_1fr]">
+	<!-- Header with Select and Create Button -->
 	<div
 		class="px-4 py-2 w-full flex flex-row border-b-2 justify-between items-center gap-2"
 	>
@@ -101,9 +113,12 @@
 					<div>Error loading feeds.</div>
 				{:else if $fetchFeeds.data?.Feeds && $fetchFeeds.data.Feeds.length > 0}
 					{#each $fetchFeeds.data.Feeds as feed}
-						<Select.Item value={feed.Title}
-							>{feed.Title}</Select.Item
+						<Select.Item
+							value={feed.Title}
+							on:click={() => goto(`/dashboard/${feed.ID}`)}
 						>
+							{feed.Title}
+						</Select.Item>
 					{/each}
 				{:else}
 					<div>No feeds available.</div>
@@ -114,12 +129,14 @@
 		<Button on:click={handleModal}>Create Feed</Button>
 	</div>
 
+	<!-- Modal for Creating Feed -->
 	{#if modal}
 		<div
 			class="absolute flex w-screen h-screen items-center justify-center"
 		>
 			<div in:blur={{ duration: 300 }} out:blur={{ duration: 300 }}>
 				<Card>
+					<!-- Modal Close Button -->
 					<div class="w-full flex flex-row items-center justify-end">
 						<Button
 							on:click={handleModal}
@@ -129,6 +146,7 @@
 							X
 						</Button>
 					</div>
+
 					<CardHeader>
 						<CardTitle>Create Feed</CardTitle>
 					</CardHeader>

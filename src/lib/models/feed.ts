@@ -1,7 +1,7 @@
 export interface FeedData {
-	author_sub: string
-	title: string
-	secret: string
+	AuthorId: string
+	Title: string
+	Secret: string
 }
 
 export interface Feed extends FeedData {
