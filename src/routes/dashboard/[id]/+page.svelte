@@ -1,8 +1,15 @@
 <script lang="ts">
 	import type { Feed } from "$lib/models/feed";
-	import { createQuery, useQueryClient } from "@tanstack/svelte-query"; // Import useQueryClient
+	import {
+		createQuery,
+		useQueryClient,
+		createMutation,
+	} from "@tanstack/svelte-query"; // Import useQueryClient
 	import { page } from "$app/stores"; // Import the page store to access URL parameters
 	import { Loader2 } from "lucide-svelte";
+	import Button from "$lib/components/ui/button/button.svelte";
+	import axios from "axios";
+	import { toast } from "svelte-sonner";
 
 	let id: string | undefined;
 
@@ -31,6 +38,25 @@
 			return data;
 		},
 	});
+
+	const mutation = createMutation({
+		mutationKey: ["feeds"],
+		mutationFn: async () => {
+			try {
+				await axios.delete(`/api/feed/byid/${id}`);
+			} catch (err) {
+				throw new Error(`${err}`);
+			}
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["feeds"] });
+			toast.success("feed removed successfully!");
+		},
+	});
+
+	function handleDelete() {
+		$mutation.mutate();
+	}
 </script>
 
 <div>
@@ -44,5 +70,12 @@
 		<h1>Feed: {$query.data.Title}</h1>
 		<p>Author: {$query.data.AuthorId}</p>
 		<p>Secret: {$query.data.Secret}</p>
+		<Button on:click={handleDelete} variant="destructive">
+			{#if $mutation.isPending}
+				<Loader2 class="animate-spin" />
+			{:else}
+				Delete
+			{/if}
+		</Button>
 	{/if}
 </div>
