@@ -6,7 +6,7 @@
 	const qc = new QueryClient();
 </script>
 
-<html lang="en" />
+<html lang="en" class="" />
 
 <Toaster />
 <QueryClientProvider client={qc}>

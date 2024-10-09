@@ -71,7 +71,8 @@
 	{:else if $query.isError}
 		<p>Error loading feed: {$query.error.message}</p>
 	{:else if $query.data}
-		<div class="w-screen h-screen flex items-center justify-center">
+		<div class="w-screen h-[80vh] flex items-center justify-center">
+			<!-- test card -->
 			<Card>
 				<CardHeader>
 					<CardTitle>{$query.data.Title}</CardTitle>
