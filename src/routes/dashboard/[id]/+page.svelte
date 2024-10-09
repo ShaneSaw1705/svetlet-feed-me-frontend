@@ -1,8 +1,19 @@
 <script lang="ts">
 	import type { Feed } from "$lib/models/feed";
-	import { createQuery, useQueryClient } from "@tanstack/svelte-query"; // Import useQueryClient
+	import {
+		createQuery,
+		useQueryClient,
+		createMutation,
+	} from "@tanstack/svelte-query"; // Import useQueryClient
 	import { page } from "$app/stores"; // Import the page store to access URL parameters
 	import { Loader2 } from "lucide-svelte";
+	import Button from "$lib/components/ui/button/button.svelte";
+	import axios from "axios";
+	import { toast } from "svelte-sonner";
+	import Card from "$lib/components/ui/card/card.svelte";
+	import CardContent from "$lib/components/ui/card/card-content.svelte";
+	import CardHeader from "$lib/components/ui/card/card-header.svelte";
+	import CardTitle from "$lib/components/ui/card/card-title.svelte";
 
 	let id: string | undefined;
 
@@ -31,6 +42,25 @@
 			return data;
 		},
 	});
+
+	const mutation = createMutation({
+		mutationKey: ["feeds"],
+		mutationFn: async () => {
+			try {
+				await axios.delete(`/api/feed/byid/${id}`);
+			} catch (err) {
+				throw new Error(`${err}`);
+			}
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["feeds"] });
+			toast.success("feed removed successfully!");
+		},
+	});
+
+	function handleDelete() {
+		$mutation.mutate();
+	}
 </script>
 
 <div>
@@ -41,8 +71,24 @@
 	{:else if $query.isError}
 		<p>Error loading feed: {$query.error.message}</p>
 	{:else if $query.data}
-		<h1>Feed: {$query.data.Title}</h1>
-		<p>Author: {$query.data.AuthorId}</p>
-		<p>Secret: {$query.data.Secret}</p>
+		<div class="w-screen h-[80vh] flex items-center justify-center">
+			<!-- test card -->
+			<Card>
+				<CardHeader>
+					<CardTitle>{$query.data.Title}</CardTitle>
+				</CardHeader>
+				<CardContent>
+					<p>Author: {$query.data.AuthorId}</p>
+					<p>Secret: {$query.data.Secret}</p>
+					<Button on:click={handleDelete} variant="destructive">
+						{#if $mutation.isPending}
+							<Loader2 class="animate-spin" />
+						{:else}
+							Delete
+						{/if}
+					</Button>
+				</CardContent>
+			</Card>
+		</div>
 	{/if}
 </div>
