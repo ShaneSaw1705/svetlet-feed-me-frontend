@@ -65,16 +65,17 @@
 </script>
 
 <div>
-	{#if $query.isLoading}
+	{#if $query.isPending}
 		<div class="w-screen h-screen flex items-center justify-center">
 			<Loader2 class="animate-spin" />
 		</div>
 	{:else if $query.isError}
 		<p>Error loading feed: {$query.error.message}</p>
 	{:else if $query.data}
-		<div class="w-screen h-[80vh] flex items-center justify-center">
+		<div class="w-screen h-[90vh] flex items-center justify-center">
 			<!-- test card -->
 			<div class="grid grid-rows-3 gap-4 w-full h-full p-4">
+				<!--top row-->
 				<div class="grid grid-cols-3">
 					<Card>
 						<CardHeader>
@@ -96,7 +97,16 @@
 						</CardContent>
 					</Card>
 				</div>
-				<div>
+				<div class="row-span-2 grid grid-cols-2 gap-4">
+					<Card class="w-full h-full">
+						<CardHeader>
+							<CardTitle>Forms</CardTitle>
+						</CardHeader>
+						<CardContent>
+							<Separator class="mb-4" />
+							forms go here
+						</CardContent>
+					</Card>
 					<Card class="w-full h-full">
 						<CardHeader>
 							<CardTitle>Forms</CardTitle>
