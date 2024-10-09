@@ -14,6 +14,7 @@
 	import CardContent from "$lib/components/ui/card/card-content.svelte";
 	import CardHeader from "$lib/components/ui/card/card-header.svelte";
 	import CardTitle from "$lib/components/ui/card/card-title.svelte";
+	import Separator from "$lib/components/ui/separator/separator.svelte";
 
 	let id: string | undefined;
 
@@ -73,22 +74,40 @@
 	{:else if $query.data}
 		<div class="w-screen h-[80vh] flex items-center justify-center">
 			<!-- test card -->
-			<Card>
-				<CardHeader>
-					<CardTitle>{$query.data.Title}</CardTitle>
-				</CardHeader>
-				<CardContent>
-					<p>Author: {$query.data.AuthorId}</p>
-					<p>Secret: {$query.data.Secret}</p>
-					<Button on:click={handleDelete} variant="destructive">
-						{#if $mutation.isPending}
-							<Loader2 class="animate-spin" />
-						{:else}
-							Delete
-						{/if}
-					</Button>
-				</CardContent>
-			</Card>
+			<div class="grid grid-rows-3 gap-4 w-full h-full p-4">
+				<div class="grid grid-cols-3">
+					<Card>
+						<CardHeader>
+							<CardTitle>{$query.data.Title}</CardTitle>
+						</CardHeader>
+						<CardContent>
+							<p>Author: {$query.data.AuthorId}</p>
+							<p>Secret: {$query.data.Secret}</p>
+							<Button
+								on:click={handleDelete}
+								variant="destructive"
+							>
+								{#if $mutation.isPending}
+									<Loader2 class="animate-spin" />
+								{:else}
+									Delete
+								{/if}
+							</Button>
+						</CardContent>
+					</Card>
+				</div>
+				<div>
+					<Card class="w-full h-full">
+						<CardHeader>
+							<CardTitle>Forms</CardTitle>
+						</CardHeader>
+						<CardContent>
+							<Separator class="mb-4" />
+							forms go here
+						</CardContent>
+					</Card>
+				</div>
+			</div>
 		</div>
 	{/if}
 </div>
