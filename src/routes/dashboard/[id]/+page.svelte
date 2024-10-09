@@ -10,6 +10,10 @@
 	import Button from "$lib/components/ui/button/button.svelte";
 	import axios from "axios";
 	import { toast } from "svelte-sonner";
+	import Card from "$lib/components/ui/card/card.svelte";
+	import CardContent from "$lib/components/ui/card/card-content.svelte";
+	import CardHeader from "$lib/components/ui/card/card-header.svelte";
+	import CardTitle from "$lib/components/ui/card/card-title.svelte";
 
 	let id: string | undefined;
 
@@ -67,15 +71,23 @@
 	{:else if $query.isError}
 		<p>Error loading feed: {$query.error.message}</p>
 	{:else if $query.data}
-		<h1>Feed: {$query.data.Title}</h1>
-		<p>Author: {$query.data.AuthorId}</p>
-		<p>Secret: {$query.data.Secret}</p>
-		<Button on:click={handleDelete} variant="destructive">
-			{#if $mutation.isPending}
-				<Loader2 class="animate-spin" />
-			{:else}
-				Delete
-			{/if}
-		</Button>
+		<div class="w-screen h-screen flex items-center justify-center">
+			<Card>
+				<CardHeader>
+					<CardTitle>{$query.data.Title}</CardTitle>
+				</CardHeader>
+				<CardContent>
+					<p>Author: {$query.data.AuthorId}</p>
+					<p>Secret: {$query.data.Secret}</p>
+					<Button on:click={handleDelete} variant="destructive">
+						{#if $mutation.isPending}
+							<Loader2 class="animate-spin" />
+						{:else}
+							Delete
+						{/if}
+					</Button>
+				</CardContent>
+			</Card>
+		</div>
 	{/if}
 </div>
